@@ -1,5 +1,5 @@
 <?php
-
+namespace Dwes\ProyectoVideoclub;
 include_once "Soporte.php";
 
 class Cliente {
@@ -36,21 +36,21 @@ class Cliente {
         return false;
     }
 
-    public function alquilar(Soporte $s): bool {
+    public function alquilar(Soporte $s): Cliente {
         if ($this->tieneAlquilado($s)) {
             echo "No se puede alquilar el soporte porque ya está alquilado.\n";
-            return false;
+            return $this;
         }
 
         if ($this->numSoportesAlquilados >= $this->maxAlquilerConcurrente) {
             echo "No se pueden alquilar más soportes, se ha alcanzado el límite.\n";
-            return false;
+            return $this;
         }
 
         $this->soportesAlquileres[] = $s;
         $this->numSoportesAlquilados++;
         echo "El soporte ha sido alquilado con éxito.\n";
-        return true;
+        return $this;
     }
 
     // Método para devolver un soporte

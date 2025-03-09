@@ -1,4 +1,6 @@
 <?php
+namespace Dwes\ProyectoVideoclub;
+
 require_once 'Resumible.php';
 
 class Soporte implements Resumible {
