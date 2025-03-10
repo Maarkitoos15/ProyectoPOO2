@@ -1,6 +1,8 @@
 <?php
 namespace Dwes\ProyectoVideoclub;
 include_once "Soporte.php";
+include "Util/SoporteYaAlquiladoException.php";
+
 
 class Cliente {
     public $nombre;
@@ -9,7 +11,7 @@ class Cliente {
     public $maxAlquilerConcurrente = 3;
     public $numSoportesAlquilados = 0;
 
-    public function __construct($nombre, $numero, $maxAlquilerConcurrente=3) {
+     public function __construct($nombre, $numero, $maxAlquilerConcurrente=3) {
         $this->nombre = $nombre;
         $this->numero = $numero;
         $this->maxAlquilerConcurrente = $maxAlquilerConcurrente;
@@ -38,20 +40,19 @@ class Cliente {
 
     public function alquilar(Soporte $s): Cliente {
         if ($this->tieneAlquilado($s)) {
-            echo "No se puede alquilar el soporte porque ya está alquilado.\n";
-            return $this;
+            throw new Util\SoporteYaAlquiladoException("El soporte ya está alquilado.");
         }
-
+    
         if ($this->numSoportesAlquilados >= $this->maxAlquilerConcurrente) {
-            echo "No se pueden alquilar más soportes, se ha alcanzado el límite.\n";
-            return $this;
+            throw new Util\SoporteYaAlquiladoException("No se pueden alquilar más soportes, se ha alcanzado el límite.");
         }
-
+    
         $this->soportesAlquileres[] = $s;
         $this->numSoportesAlquilados++;
         echo "El soporte ha sido alquilado con éxito.\n";
         return $this;
     }
+    
 
     // Método para devolver un soporte
     public function devolver(int $numSoporte): bool {

@@ -57,17 +57,91 @@ class Videoclub {
         return $this;
     }
 
-    public function alquilarSocioProducto($numeroCliente, $numeroSoporte): Videoclub {
-        $socio = $this->socios[$numeroCliente - 1] ?? null;
-        $producto = $this->productos[$numeroSoporte - 1] ?? null;
+    public function alquilarSocioProducto($numeroCliente, $numeroSoporte) {
+        $socio = $this->socios[$numeroCliente - 1]; // Obtener el socio
+        $producto = $this->productos[$numeroSoporte - 1]; // Obtener el producto
 
-        if ($socio && $producto) {
+        try {
+            // Intentar alquilar el producto
             $socio->alquilar($producto);
-        } else {
-            echo "Error: Cliente o producto no encontrado.\n";
+            
+
+            // Actualizamos los contadores en Videoclub
+            $this->numProductosAlquilados++;
+            $this->numTotalAlquileres++;
+
+        } catch (\Util\SoporteYaAlquiladoException $e) {
+            echo "Error: " . $e->getMessage() . "\n";
+        } catch (\Util\CupoSuperadoException $e) {
+            echo "Error: " . $e->getMessage() . "\n";
+        } catch (\Util\SoporteNoEncontradoException $e) {
+            echo "Error: " . $e->getMessage() . "\n";
+        } catch (\Util\ClienteNoEncontradoException $e) {
+            echo "Error: " . $e->getMessage() . "\n";
+        }
+    }
+
+    public function alquilarSocioProductos(int $numSocio, array $numerosProductos) {
+        $socio = $this->socios[$numSocio - 1]; // Obtener el socio
+
+        // Verificar si todos los productos están disponibles
+        foreach ($numerosProductos as $numeroProducto) {
+            $producto = $this->productos[$numeroProducto - 1]; // Obtener cada producto
+            if ($producto->alquilado) {
+                // Si algún producto está alquilado, no alquilamos ninguno
+                echo "Error: El producto '{$producto->titulo}' no está disponible.\n";
+                return; // Salir del método sin hacer el alquiler
+            }
         }
 
-        return $this;
+        // Si todos los productos están disponibles, alquilamos
+        foreach ($numerosProductos as $numeroProducto) {
+            $producto = $this->productos[$numeroProducto - 1]; // Obtener cada producto
+            try {
+                $socio->alquilar($producto); // Alquilamos el producto para el socio
+                $producto->alquilar(); // Marcamos el producto como alquilado
+
+                // Actualizamos los contadores en Videoclub
+                $this->numProductosAlquilados++;
+                $this->numTotalAlquileres++;
+
+                echo "Producto '{$producto->titulo}' alquilado con éxito.\n";
+            } catch (\Util\SoporteYaAlquiladoException $e) {
+                echo "Error: " . $e->getMessage() . "\n";
+            } catch (\Util\CupoSuperadoException $e) {
+                echo "Error: " . $e->getMessage() . "\n";
+            } catch (\Util\SoporteNoEncontradoException $e) {
+                echo "Error: " . $e->getMessage() . "\n";
+            } catch (\Util\ClienteNoEncontradoException $e) {
+                echo "Error: " . $e->getMessage() . "\n";
+            }
+        }
     }
+
+    public function devolverSocioProducto(int $numSocio, int $numeroProducto) {
+        $socio = $this->socios[$numSocio - 1];  // Obtenemos el socio
+        $producto = $this->productos[$numeroProducto - 1];  // Obtenemos el producto
+
+        // Comprobamos si el producto está alquilado y lo devolvemos
+        if ($producto->alquilado) {
+            $producto->devolver();  // Actualizamos el estado del producto a disponible
+            echo "El producto '{$producto->titulo}' ha sido devuelto por el socio '{$socio->nombre}'.\n";
+        } else {
+            echo "El producto '{$producto->titulo}' no está alquilado y no puede devolverse.\n";
+        }
+
+        return $this;  // Permite encadenamiento de métodos
+    }
+
+    public function devolverSocioProductos(int $numSocio, array $numerosProductos) {
+        foreach ($numerosProductos as $numeroProducto) {
+            // Llamamos al método devolverSocioProducto para cada producto
+            $this->devolverSocioProducto($numSocio, $numeroProducto);
+        }
+
+        return $this;  // Permite encadenamiento de métodos
+    }
+
+    
+
 }
-?>
